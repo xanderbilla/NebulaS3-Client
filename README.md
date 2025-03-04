@@ -40,12 +40,12 @@ NebulaS3 is an advanced Amazon S3 management application providing secure intera
 
 ## 📚 Documentation
 
-Comprehensive guides and API references available on our [GitHub Wiki](https://github.com/tikastech/nebulas3/wiki)
+Comprehensive guides and API references available on our [GitHub Wiki](https://github.com/xanderbilla/nebulas3/wiki)
 
 ## 💬 Support
 
-- 🐛 GitHub Issues: [Create an issue](https://github.com/tikastech/nebulas3/issues)
-- 📧 Email: tikaszvt@gmail.com
+- 🐛 GitHub Issues: [Create an issue](https://github.com/xanderbilla/nebulas3/issues)
+- 📧 Email: [vikas99blr@gmail.com](mailto:vikas99blr@gmail.com)
 
 ## 👨‍💻 Author
 

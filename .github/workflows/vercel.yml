@@ -1,12 +1,18 @@
 name: Deploy to Vercel
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - 'README.md'
+            - '.github/**'
+    pull_request:
+        branches:
+            - main
+        paths-ignore:
+            - 'README.md'
+            - '.github/**'
 
 jobs:
   deploy:
