@@ -14,7 +14,7 @@ export default function DashboardBtn({}: Props) {
   return (
     <Link
       className="rounded-full transition-colors flex items-center justify-center text-white gap-2 hover:opacity-90 text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600"
-      href={isLogin ? "/dashboard" : "/login"}
+      href={isLogin ? "/dashboard/buckets" : "/login"}
       rel="noopener noreferrer"
     >
       <User className="size-4" />

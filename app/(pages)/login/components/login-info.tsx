@@ -15,7 +15,7 @@ export function LoginInfo() {
       <AlertDescription>
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="config-steps">
-            <AccordionTrigger className="text-yellow-200 dark:text-yellow-300">
+            <AccordionTrigger className="text-gray-600 dark:text-yellow-300">
               Configuration Steps
             </AccordionTrigger>
             <AccordionContent>

@@ -119,8 +119,8 @@ export default function LoginForm({
         </div>
         <Button
           type="submit"
-          variant="secondary"
-          className="w-full dark:hover:bg-secondary/90 h-12"
+          variant="default"
+          className="w-full"
           disabled={loading || !credentials.accessKey || !credentials.secretKey}
         >
           {loading ? (
