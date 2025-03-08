@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { S3File, S3Root } from "@/types/S3Objects";
 
 type FileType =
   | "document"
@@ -27,55 +27,100 @@ type FileType =
   | "image"
   | "audio"
   | "video"
+  | "unknown"
   | "folder";
 
-interface MockFile {
-  title: string;
-  size?: string;
-  itemCount?: number;
-  type: FileType;
-  createdAt: Date;
-}
-
-const mockFileData: MockFile[] = [
-  {
-    title: "Explorer.docx",
-    size: "2.1GB",
-    type: "document",
-    createdAt: new Date("2024-01-14"),
-  },
-  {
-    title: "Movies",
-    itemCount: 5,
-    type: "folder",
-    size: "5.1GB",
-    createdAt: new Date("2024-01-13"),
-  },
-  {
-    title: "Never Gonna Give You Up.mp3",
-    size: "5.1MB",
-    type: "audio",
-    createdAt: new Date("2024-01-12"),
-  },
-  {
-    title: "Rick Astley Video.mp4",
-    size: "1.2GB",
-    type: "video",
-    createdAt: new Date("2024-01-11"),
-  },
-  {
-    title: "1955772247.jpg",
-    size: "1.8MB",
-    type: "image",
-    createdAt: new Date("2024-01-10"),
-  },
-  {
-    title: "Rick Astley Archive.zip",
-    size: "536MB",
-    type: "compressed",
-    createdAt: new Date("2024-01-09"),
-  },
-];
+const mockFileData: S3Root = {
+  folders: [
+    {
+      folders: [],
+      name: "compressed",
+      files: [
+        {
+          extension: "rar",
+          etag: '"dd9bb762731449c0e06a2c869b739db1"',
+          size: "1.56 MB",
+          type: "compressed",
+          name: "lab.rar",
+          location: "compressed/lab.rar",
+          lastModified: "2025-03-08T05:15:12Z",
+        },
+      ],
+      location: "compressed/",
+      type: "folder",
+      itemCount: 1,
+    },
+    {
+      folders: [],
+      name: "documents",
+      files: [
+        {
+          extension: "pdf",
+          etag: '"52e419c0508aaeea9213f513b84e8d73"',
+          size: "9.17 KB",
+          type: "document",
+          name: "rptTimeTableStudent.pdf",
+          location: "documents/rptTimeTableStudent.pdf",
+          lastModified: "2025-03-08T05:15:11Z",
+        },
+      ],
+      location: "documents/",
+      type: "folder",
+      itemCount: 1,
+    },
+    {
+      folders: [],
+      name: "videos",
+      files: [
+        {
+          extension: "mp4",
+          etag: '"447b7f6a669fc87a1e5c1d506474a7cb"',
+          size: "1.12 MB",
+          type: "video",
+          name: "VID_4556446.mp4",
+          location: "videos/VID_4556446.mp4",
+          lastModified: "2025-03-08T05:15:12Z",
+        },
+        {
+          extension: "mp4",
+          etag: '"4aa28625598a7adfb7ec3fef5e44453b-2"',
+          size: "31.48 MB",
+          type: "video",
+          name: "VID_5468553.mp4",
+          location: "videos/VID_5468553.mp4",
+          lastModified: "2025-03-08T05:15:11Z",
+        },
+      ],
+      location: "videos/",
+      type: "folder",
+      itemCount: 2,
+    },
+  ],
+  name: "root",
+  files: [
+    {
+      extension: "jpg",
+      etag: '"8aa445cbeca5119ec77c4e4bb760e12e"',
+      size: "130.04 KB",
+      type: "image",
+      name: "IMG_2135545.jpg",
+      location: "IMG_2135545.jpg",
+      lastModified: "2025-03-08T05:15:13Z",
+    },
+    {
+      extension: "jpg",
+      etag: '"3ee4b3bb7fe145c77a883db5b201a172"',
+      size: "93.66 KB",
+      type: "image",
+      name: "IMG_2135546.jpg",
+      location: "IMG_2135546.jpg",
+      lastModified: "2025-03-08T05:15:13Z",
+    },
+  ],
+  location: "",
+  type: "folder",
+  itemCount: 5,
+};
 
 const fileTypes = [
   { value: "all", label: "All Files" },
@@ -101,51 +146,53 @@ export default function Page() {
   const [open, setOpen] = React.useState(false);
   const [selectedType, setSelectedType] = React.useState("all");
 
-  React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedFile(null);
-      }
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, []);
-
   const filteredAndSortedData = React.useMemo(() => {
-    let filtered = mockFileData.filter((file) =>
-      file.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    const filterItems = (items: S3File[] | S3Root["folders"]) => {
+      return items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    };
+  
+    let filteredFiles = filterItems(mockFileData.files);
+    const filteredFolders = filterItems(mockFileData.folders);
+  
     // Apply type filter
     if (selectedType !== "all") {
-      filtered = filtered.filter((file) => file.type === selectedType);
+      filteredFiles = filteredFiles.filter((file) => file.type === selectedType);
     }
-
+  
+    // Apply date or size filter only to files
     if (activeFilter === "date") {
-      filtered = [...filtered].sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-      );
+      filteredFiles = [...filteredFiles].sort((a, b) => {
+        if ('lastModified' in a && 'lastModified' in b) {
+          return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
+        }
+        return 0;
+      });
     } else if (activeFilter === "size") {
-      const convertToBytes = (size: string | undefined) => {
-        if (!size) return 0;
+      const convertToBytes = (size: string) => {
         const num = parseFloat(size);
         if (size.includes("GB")) return num * 1024 * 1024 * 1024;
         if (size.includes("MB")) return num * 1024 * 1024;
         if (size.includes("KB")) return num * 1024;
         return num;
       };
-      filtered = [...filtered].sort((a, b) => {
-        const sizeA = convertToBytes(a.size);
-        const sizeB = convertToBytes(b.size);
-        return sizeB - sizeA;
+      filteredFiles = [...filteredFiles].sort((a, b) => {
+        if ('size' in a && 'size' in b) {
+          return convertToBytes(b.size) - convertToBytes(a.size);
+        }
+        return 0;
       });
     }
-
-    return filtered;
+  
+    return {
+      files: filteredFiles,
+      folders: filteredFolders,
+    };
   }, [searchTerm, activeFilter, selectedType]);
+  
 
-  const [selectedFile, setSelectedFile] = React.useState<string | null>(null);
-
+  
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
@@ -208,7 +255,7 @@ export default function Page() {
           </Popover>
           <Button
             variant="default"
-            title="Upload"
+            name="Upload"
             className="w-12 h-12 sm:w-auto sm:h-auto rounded-full sm:rounded-md fixed sm:static bottom-4 right-4 z-50 p-0 sm:p-2 bg-primary hover:bg-primary/90 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100"
           >
             <Upload className="sm:hidden" />
@@ -218,89 +265,13 @@ export default function Page() {
         </div>
       </div>
       <div className="flex flex-wrap gap-4 items-center justify-center md:justify-normal">
-        {filteredAndSortedData.map((file, index) => (
-          <div
-            key={index}
-            className="relative"
-            onClick={() => setSelectedFile(file.title)}
-          >
-            <Files data={file} type={file.type} />
-            {selectedFile === file.title && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black/90 dark:bg-black/95 z-[9999]">
-                <React.Fragment>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Close"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        setSelectedFile(null);
-                      }
-                    }}
-                    className="absolute top-8 right-8 bg-white/50 hover:bg-white/75 dark:bg-gray-800/50 dark:hover:bg-gray-800/75 border-0 rounded-full"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </Button>
-                  {selectedFile && (
-                    <div
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Escape") {
-                          setSelectedFile(null);
-                        }
-                      }}
-                      className="focus:outline-none"
-                    />
-                  )}
-                </React.Fragment>
-                <div className="relative">
-                  {file.type === "image" ? (
-                    <Image
-                      width={500}
-                      height={500}
-                      src={`/files/${file.title}`}
-                      alt={file.title}
-                      className="max-w-xl max-h-[80vh] object-contain"
-                    />
-                  ) : file.type === "video" ? (
-                    <video controls className="max-w-xl max-h-[80vh]">
-                      <source src={`/files/${file.title}`} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <div className="bg-black dark:bg-gray-800 text-white px-4 py-2 rounded max-w-xl text-center">
-                      {file.title}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+        {filteredAndSortedData.folders.map((folder) => (
+          <Files key={folder.name} data={folder} type="folder" />
+        ))}
+        {filteredAndSortedData.files.map((file) => (
+          <Files key={file.name} data={file} type={file.type as FileType} />
         ))}
       </div>
-      {selectedFile && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setSelectedFile(null)}
-        />
-      )}
     </div>
   );
 }
