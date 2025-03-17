@@ -11,18 +11,18 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 interface FileData {
-  title: string;
+  name: string;
   itemCount?: number;
   size?: string;
+  extension?: string;
 }
 
 interface FileProps {
-  type: "document" | "compressed" | "image" | "audio" | "video" | "folder";
+  type: "document" | "compressed" | "image" | "audio" | "video" | "folder" | "unknown";
   data: FileData;
 }
 
 export default function Files({ type, data }: FileProps) {
-  const ext = type !== "folder" ? data.title.split(".").pop() : undefined;
   const getIconProperties = () => {
     switch (type) {
       case "document":
@@ -85,14 +85,14 @@ export default function Files({ type, data }: FileProps) {
                 <Link
                   href="#"
                   className={`font-semibold text-xs sm:text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap ${
-                    data.title.length > 13 ? "group-hover:animate-marquee" : ""
+                    data.name.length > 13 ? "group-hover:animate-marquee" : ""
                   } inline-block`}
                 >
-                  {data.title}
+                  {data.name}
                 </Link>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {ext?.toUpperCase()}{" "}
+                {(data.extension ?? "").toUpperCase()}{" "}
                 {type === "folder"
                   ? `${data.itemCount} items`
                   : `• ${data.size}`}

@@ -19,7 +19,8 @@ function getSessionToken(): string | null {
  */
 export async function fetchBuckets() {
   const sessionToken = getSessionToken();
-
+  console.log(sessionToken);
+  
   if (!sessionToken) {
     throw new Error("No session token found. Please log in.");
   }

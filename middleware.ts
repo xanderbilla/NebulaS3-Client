@@ -14,7 +14,7 @@ export default async function middleware(req: NextRequest) {
     }
 
     if (isPublic && user) {
-        return NextResponse.redirect(new URL('/dashboard', req.nextUrl).toString());
+        return NextResponse.redirect(new URL('/dashboard/buckets', req.nextUrl).toString());
     }
 
     return NextResponse.next();
