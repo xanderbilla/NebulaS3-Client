@@ -16,7 +16,7 @@ export async function isAuthenticated(): Promise<boolean> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Session-Token": sessionToken,
+        "sessionToken": sessionToken,
       },
     });
 
