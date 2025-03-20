@@ -19,3 +19,4 @@ export default function BucketCardSkeleton() {
     </Card>
   );
 }
+export function BucketCardSkeleton() { return <div className="skeleton">Loading...</div> }
