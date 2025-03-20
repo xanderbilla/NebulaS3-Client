@@ -56,3 +56,4 @@ export function ModeToggle({ className }: ModeToggleProps) {
     </div>
   );
 }
+export function ModeToggle() { return <button>Toggle Theme</button> }
