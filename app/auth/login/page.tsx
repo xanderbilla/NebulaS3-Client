@@ -2,8 +2,31 @@
 
 import { ArrowLeft } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import BackButton from "@/components/ui/custom-button";
-import Logo from "@/components/Logo";
+
+// Optimize logo component to reduce imports
+const Logo = () => (
+  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 14h18" />
+      <path d="M3 9h18" />
+      <path d="M9 19V9" />
+      <path d="M15 19V9" />
+    </svg>
+  </div>
+);
 
 // Load components with aggressive code splitting and skeleton fallbacks
 const LoginForm = dynamic(
@@ -26,7 +49,13 @@ export default function LoginPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-between items-center">
-          <Logo />
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-medium glass-text"
+          >
+            <Logo />
+            NebulaS3
+          </Link>
         </div>
         <div className="flex justify-start mt-4">
           <BackButton

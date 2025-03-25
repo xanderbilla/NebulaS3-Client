@@ -218,4 +218,3 @@ export default function LoginForm({
     </form>
   );
 }
-export function LoginForm() { return <div>Login Form</div> }

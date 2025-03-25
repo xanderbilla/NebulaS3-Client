@@ -56,6 +56,3 @@ The application uses two types of environment variables:
 - Server-side environment variables are kept private
 - Better separation of concerns between UI components and data fetching
 - Consistent error handling patterns across the application
-# Authentication Flow
-
-This document describes the authentication flow for the application.
