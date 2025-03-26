@@ -1,29 +1,26 @@
-interface S3File {
-  name: string;
-  location: string;
-  size: string;
-  lastModified: string;
+export interface S3File {
   extension: string;
+  size: string;
   etag: string;
-  type: "document" | "compressed" | "image" | "audio" | "video" | "unknown";
+  lastModified: string;
+  key: string;
+  fileType: string;
+  name?: string;
+  type?: string;
 }
 
-interface S3Folder {
-  name: string;
-  location: string;
-  type: "folder";
-  itemCount: number;
+export interface S3Folder {
+  etag: string | null;
+  lastModified: string | null;
+  key: string;
+}
+
+export interface S3Root {
+  filesCount: number;
   folders: S3Folder[];
   files: S3File[];
+  currentFolder: string;
+  etag: string | null;
+  lastModified: string | null;
+  foldersCount: number;
 }
-
-interface S3Root {
-  name: string;
-  location: string;
-  type: "folder";
-  itemCount: number;
-  folders: S3Folder[];
-  files: S3File[];
-}
-
-export type { S3File, S3Folder, S3Root };

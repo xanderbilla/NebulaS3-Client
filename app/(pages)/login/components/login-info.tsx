@@ -7,6 +7,41 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+const CONFIG_STEPS = [
+  {
+    title: "Create an IAM User in AWS Console",
+    steps: [
+      "Navigate to IAM → Users → Create user",
+      "Set username and enable programmatic access",
+      "Save the Access Key ID and Secret Access Key securely",
+    ],
+  },
+  {
+    title: 'Create the "test-role" role',
+    steps: [
+      "Go to IAM → Roles → Create role",
+      'Select "AWS service" as the trusted entity',
+      "Attach S3 permissions policy with required actions:",
+      ["s3:GetObject", "s3:PutObject", "s3:ListBucket"],
+    ],
+  },
+  {
+    title: "Configure STS Assume Role",
+    steps: [
+      "Create a policy allowing sts:AssumeRole action",
+      "Attach this policy to your IAM user",
+      'Update trust relationship on "test-role"',
+    ],
+  },
+  {
+    title: "Set up AWS credentials locally",
+    steps: [
+      "Configure AWS CLI with user credentials",
+      "Verify configuration using 'aws configure list'",
+    ],
+  },
+];
+
 export function LoginInfo() {
   return (
     <Alert className="mt-8" variant="info">
@@ -20,51 +55,27 @@ export function LoginInfo() {
             </AccordionTrigger>
             <AccordionContent>
               <p>Follow these detailed steps to configure AWS S3 access:</p>
-              <ol className="list-decimal ml-4 space-y-2">
-                <li>
-                  Create an IAM User in AWS Console:
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>Navigate to IAM → Users → Create user</li>
-                    <li>Set username and enable programmatic access</li>
-                    <li>
-                      Save the Access Key ID and Secret Access Key securely
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  Create the &quot;test-role&quot; role:
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>Go to IAM → Roles → Create role</li>
-                    <li>
-                      Select &quot;AWS service&quot; as the trusted entity
-                    </li>
-                    <li>
-                      Attach S3 permissions policy with required actions:
-                      <ul className="list-circle ml-4">
-                        <li>s3:GetObject</li>
-                        <li>s3:PutObject</li>
-                        <li>s3:ListBucket</li>
-                      </ul>
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  Configure STS Assume Role:
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>Create a policy allowing sts:AssumeRole action</li>
-                    <li>Attach this policy to your IAM user</li>
-                    <li>Update trust relationship on &quot;test-role&quot;</li>
-                  </ul>
-                </li>
-                <li>
-                  Set up AWS credentials locally:
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>Configure AWS CLI with user credentials</li>
-                    <li>
-                      Verify configuration using &apos;aws configure list&apos;
-                    </li>
-                  </ul>
-                </li>
+              <ol className="list-decimal pl-4 mt-2 space-y-4">
+                {CONFIG_STEPS.map((step, index) => (
+                  <li key={index}>
+                    {step.title}:
+                    <ul className="list-disc ml-4 mt-1">
+                      {step.steps.map((subStep, subIndex) =>
+                        Array.isArray(subStep) ? (
+                          <li key={subIndex}>
+                            {subStep.map((action, actionIndex) => (
+                              <span key={actionIndex} className="block ml-4">
+                                • {action}
+                              </span>
+                            ))}
+                          </li>
+                        ) : (
+                          <li key={subIndex}>{subStep}</li>
+                        )
+                      )}
+                    </ul>
+                  </li>
+                ))}
               </ol>
               <p className="text-sm mt-2 text-muted-foreground">
                 Important: Always follow AWS security best practices and the

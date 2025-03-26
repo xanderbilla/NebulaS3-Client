@@ -9,12 +9,20 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import SpinnerIcon from "@/icons/spinner-icon";
 import Redirecting from "@/skeleton/redirecting";
+import { useAuth } from "@/hooks/useAuth";
 
-export default function LoginForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"form">) {
-  const [credentials, setCredentials] = useState({
+interface LoginCredentials {
+  accessKey: string;
+  secretKey: string;
+  region: string;
+}
+
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
+  className?: string;
+}
+
+export default function LoginForm({ className, ...props }: LoginFormProps) {
+  const [credentials, setCredentials] = useState<LoginCredentials>({
     accessKey: "",
     secretKey: "",
     region: "ap-south-1",
@@ -22,37 +30,31 @@ export default function LoginForm({
   const [loading, setLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+
+  const handleInputChange =
+    (field: keyof LoginCredentials) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setCredentials((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.status === "SUCCESS" && data.data.sessionToken) {
-        document.cookie = `sessionToken=${data.data.sessionToken}; path=/; Secure; SameSite=Strict`;
-        toast.success("Login successful!");
+      const success = await login(credentials);
+      if (success) {
         setIsRedirecting(true);
         setTimeout(() => {
           router.push("/dashboard/buckets");
         }, 200);
-      } else {
-        toast.error(data.message || "Invalid credentials");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Login error:", error);
       toast.error("Failed to validate credentials");
     } finally {
       setLoading(false);
@@ -88,12 +90,7 @@ export default function LoginForm({
             maxLength={264}
             value={credentials.accessKey}
             className="dark:bg-gray-800 dark:text-white dark:border-gray-700 h-12"
-            onChange={(e) =>
-              setCredentials((prev) => ({
-                ...prev,
-                accessKey: e.target.value,
-              }))
-            }
+            onChange={handleInputChange("accessKey")}
           />
         </div>
         <div className="grid gap-2">
@@ -109,12 +106,7 @@ export default function LoginForm({
             disabled={loading}
             value={credentials.secretKey}
             className="dark:bg-gray-800 dark:text-white dark:border-gray-700 h-12"
-            onChange={(e) =>
-              setCredentials((prev) => ({
-                ...prev,
-                secretKey: e.target.value,
-              }))
-            }
+            onChange={handleInputChange("secretKey")}
           />
         </div>
         <Button

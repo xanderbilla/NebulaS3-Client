@@ -15,7 +15,10 @@ export default function LoginPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10 dark:bg-background">
         <div className="flex gap-2 justify-start">
-          <Link href="/" className="flex items-center gap-2 font-medium">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-medium hover:opacity-80 transition-opacity"
+          >
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <GalleryVerticalEnd className="size-4" />
             </div>
@@ -32,8 +35,9 @@ export default function LoginPage() {
       <div className="relative hidden bg-muted dark:bg-muted/50 lg:block">
         <Image
           src="/placeholder/placeholder.svg"
-          alt="Image"
-          layout="fill"
+          alt="Login background"
+          fill
+          priority
           className="absolute z-10 inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
       </div>
