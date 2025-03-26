@@ -3,9 +3,23 @@
 import { useState } from "react";
 import useBuckets from "@/hooks/useBuckets";
 import { useBucketFiltering } from "@/hooks/useBucketFiltering";
-import BucketToolbar from "@/components/bucket-component/bucket-toolbar";
-import BucketGrid from "@/components/bucket-component/bucket-grid";
-import BucketGridSkeleton from "@/components/bucket-component/bucket-grid-skeleton";
+import dynamic from "next/dynamic";
+
+const BucketToolbar = dynamic(() =>
+  import("@/components/bucket-component/bucket-toolbar").then(
+    (mod) => mod.default
+  )
+);
+
+const BucketGrid = dynamic(() =>
+  import("@/components/bucket-component/bucket-grid").then((mod) => mod.default)
+);
+
+const BucketGridSkeleton = dynamic(() =>
+  import("@/components/bucket-component/bucket-grid-skeleton").then(
+    (mod) => mod.default
+  )
+);
 
 export default function Page() {
   const { buckets, isLoading, isError, refetch } = useBuckets();

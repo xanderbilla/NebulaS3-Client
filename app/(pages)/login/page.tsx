@@ -2,13 +2,21 @@ import { GalleryVerticalEnd } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { LoginInfo } from "./components/login-info";
 
 const LoginForm = dynamic(() => import("./components/login-form"), {
   loading: () => (
     <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded h-40" />
   ),
 });
+
+const LoginInfo = dynamic(
+  () => import("./components/login-info").then((mod) => mod.default),
+  {
+    loading: () => (
+      <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded h-40" />
+    ),
+  }
+);
 
 export default function LoginPage() {
   return (
