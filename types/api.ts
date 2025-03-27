@@ -13,4 +13,10 @@ export interface ListObjectsRequest {
   objectPrefix: string;
 }
 
-export interface ListObjectsResponse extends ApiResponse<S3Root> {}
+export interface ListObjectsResponse {
+  status: string;
+  message: string;
+  data: S3Root;
+  statusCode: number;
+  timestamp: string;
+}

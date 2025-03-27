@@ -32,11 +32,11 @@ interface PageProps {
 }
 
 interface FileData {
-  name: string;
-  itemCount?: number;
-  size?: string;
-  extension?: string;
-  key?: string;
+  readonly name: string;
+  readonly itemCount?: number;
+  readonly size?: string;
+  readonly extension?: string;
+  readonly key?: string;
 }
 
 export default function Page({ params }: PageProps) {

@@ -5,11 +5,9 @@ import Cookies from "js-cookie";
 const API_BASE_URL = "http://localhost:8080";
 
 interface PresignedUrlResponse {
-  status: string;
+  success: boolean;
   message: string;
   data: string;
-  statusCode: number;
-  timestamp: number[];
 }
 
 class S3Service extends BaseService {
@@ -54,7 +52,7 @@ class S3Service extends BaseService {
           },
           body: JSON.stringify({
             bucketName,
-            objectKey,
+            objectPrefix: objectKey,
           }),
         },
         `presigned-url-${bucketName}-${objectKey}`

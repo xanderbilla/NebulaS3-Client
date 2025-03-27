@@ -55,6 +55,7 @@ export default function Files({
 }: FileProps) {
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
   const getIconColor = () => {
     return "text-gray-700 dark:text-gray-300";
@@ -105,11 +106,14 @@ export default function Files({
           throw new Error("No URL received from presigned URL request");
         }
 
-        setPreviewUrl(url.url);
+        setPreviewUrl(url);
         setIsPreviewOpen(true);
+        setError(null);
       } catch (error) {
         console.error("Error getting presigned URL:", error);
-        // You might want to show a toast notification here
+        setError(
+          error instanceof Error ? error.message : "Failed to load preview"
+        );
       }
     } else {
       console.log("Click conditions not met:", {
@@ -184,7 +188,13 @@ export default function Files({
           onClose={() => setIsPreviewOpen(false)}
           title={data.name}
           mediaUrl={previewUrl}
+          type={type}
         />
+      )}
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <span className="block sm:inline">{error}</span>
+        </div>
       )}
     </>
   );

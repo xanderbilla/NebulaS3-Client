@@ -5,6 +5,7 @@ import React, {
   WheelEvent,
   useRef,
 } from "react";
+import Image from "next/image";
 import {
   X,
   Download,
@@ -19,6 +20,14 @@ interface MediaPreviewProps {
   onClose: () => void;
   title: string;
   mediaUrl: string;
+  type:
+    | "document"
+    | "compressed"
+    | "image"
+    | "audio"
+    | "video"
+    | "folder"
+    | "unknown";
   onNext?: () => void;
   onPrev?: () => void;
   hasNext?: boolean;
@@ -106,6 +115,7 @@ export default function MediaPreview({
   onClose,
   title,
   mediaUrl,
+  type,
   onNext,
   onPrev,
   hasNext = false,
@@ -118,6 +128,7 @@ export default function MediaPreview({
     position: { x: 0, y: 0 } as Position,
     isDragging: false,
     dragStart: { x: 0, y: 0 } as Position,
+    error: null as string | null,
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -191,6 +202,8 @@ export default function MediaPreview({
       position: { x: 0, y: 0 },
       scale: 1,
       rotation: 0,
+      isLoading: true,
+      error: null,
     }));
   }, [mediaUrl]);
 
@@ -206,6 +219,76 @@ export default function MediaPreview({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onNext, onPrev, hasNext, hasPrev, state.scale]);
+
+  const handleError = (error: string) => {
+    setState((prev) => ({ ...prev, isLoading: false, error }));
+  };
+
+  const renderMedia = () => {
+    switch (type) {
+      case "image":
+        return (
+          <Image
+            ref={imageRef}
+            src={mediaUrl}
+            alt={title}
+            width={800}
+            height={600}
+            className={`max-w-full max-h-[calc(100vh-8rem)] object-contain shadow-xl select-none ${
+              state.isLoading
+                ? "opacity-0"
+                : "opacity-100 transition-all duration-300"
+            } ${state.isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+            style={{
+              transform: `translate(${state.position.x}px, ${state.position.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`,
+              transition: state.isDragging ? "none" : "transform 0.3s ease-out",
+            }}
+            onLoad={() => setState((prev) => ({ ...prev, isLoading: false }))}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onWheel={handleWheel}
+            onError={() => handleError("Failed to load image")}
+            unoptimized
+          />
+        );
+      case "video":
+        return (
+          <video
+            controls
+            className="max-w-full max-h-full"
+            onLoadedData={() =>
+              setState((prev) => ({ ...prev, isLoading: false }))
+            }
+            onError={() => handleError("Failed to load video")}
+          >
+            <source src={mediaUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      case "audio":
+        return (
+          <audio
+            controls
+            className="w-full"
+            onLoadedData={() =>
+              setState((prev) => ({ ...prev, isLoading: false }))
+            }
+            onError={() => handleError("Failed to load audio")}
+          >
+            <source src={mediaUrl} type="audio/mpeg" />
+            Your browser does not support the audio tag.
+          </audio>
+        );
+      default:
+        return (
+          <div className="text-center p-4">
+            <p>Preview not available for this file type</p>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="fixed inset-0 w-screen h-screen max-w-none p-0 bg-black/50 z-[9999]">
@@ -227,8 +310,8 @@ export default function MediaPreview({
 
       <div
         ref={containerRef}
-        role="presentation"
         tabIndex={0}
+        aria-label={`Preview container for ${title}`}
         className="w-full h-full flex items-center justify-center pt-16 overflow-hidden focus:outline-none"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -241,23 +324,19 @@ export default function MediaPreview({
               <div className="w-16 h-16 bg-white/10 animate-pulse" />
             </div>
           )}
-          <img
-            ref={imageRef}
-            src={mediaUrl}
-            alt={title}
-            className={`max-w-full max-h-[calc(100vh-8rem)] object-contain shadow-xl select-none ${
-              state.isLoading
-                ? "opacity-0"
-                : "opacity-100 transition-all duration-300"
-            } ${state.isDragging ? "cursor-grabbing" : "cursor-grab"}`}
-            style={{
-              transform: `translate(${state.position.x}px, ${state.position.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`,
-              transition: state.isDragging ? "none" : "transform 0.3s ease-out",
-            }}
-            onLoad={() => setState((prev) => ({ ...prev, isLoading: false }))}
-            onMouseDown={handleMouseDown}
-            draggable={false}
-          />
+          {state.error ? (
+            <div className="text-red-500 text-center p-4">
+              <p>{state.error}</p>
+              <button
+                onClick={() => window.open(mediaUrl, "_blank")}
+                className="mt-2 text-blue-500 hover:text-blue-700"
+              >
+                Try opening in new tab
+              </button>
+            </div>
+          ) : (
+            renderMedia()
+          )}
         </div>
       </div>
 
