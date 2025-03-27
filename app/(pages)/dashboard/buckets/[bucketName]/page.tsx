@@ -36,6 +36,7 @@ interface FileData {
   itemCount?: number;
   size?: string;
   extension?: string;
+  key?: string;
 }
 
 export default function Page({ params }: PageProps) {
@@ -141,11 +142,13 @@ export default function Page({ params }: PageProps) {
     name: file.key.split("/").pop() || "",
     size: file.size,
     extension: file.extension,
+    key: file.key,
   });
 
   const mapS3FolderToFileData = (folder: S3Folder): FileData => ({
     name: folder.key.replace(/\/$/, ""),
     itemCount: 0,
+    key: folder.key,
   });
 
   if (error) {
@@ -204,6 +207,7 @@ export default function Page({ params }: PageProps) {
                 <Files
                   data={mapS3FileToFileData(file)}
                   type={file.fileType.toLowerCase() as FileType}
+                  bucketName={resolvedParams.bucketName}
                 />
               </div>
             ))}

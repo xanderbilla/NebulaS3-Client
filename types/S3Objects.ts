@@ -13,6 +13,7 @@ export interface S3Folder {
   etag: string | null;
   lastModified: string | null;
   key: string;
+  itemCount?: number;
 }
 
 export interface S3Root {

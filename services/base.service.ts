@@ -33,9 +33,19 @@ export class BaseService {
     }
 
     const data = await response.json();
+    console.log("Raw response data:", data);
+
+    // Handle different response formats
     if (data.status === "SUCCESS") {
       return data;
+    } else if (data.url) {
+      // Handle presigned URL response format
+      return data;
+    } else if (data.data) {
+      // Handle response with data wrapper
+      return data.data;
     }
+
     throw new Error(data.message || "Request failed");
   }
 
@@ -63,6 +73,7 @@ export class BaseService {
 
       return this.handleResponse<T>(response);
     } catch (error) {
+      console.error("Request error:", error);
       throw error;
     } finally {
       // Clean up abort controller
