@@ -1,4 +1,10 @@
-import React, { useEffect, useState, MouseEvent, WheelEvent } from "react";
+import React, {
+  useEffect,
+  useState,
+  MouseEvent,
+  WheelEvent,
+  useCallback,
+} from "react";
 import dynamic from "next/dynamic";
 import { MediaPreviewProps, PreviewState } from "./types";
 
@@ -49,18 +55,21 @@ export default function MediaPreview({
     };
   };
 
-  const handleZoom = (delta: number) => {
-    setState((prev) => {
-      const newScale = Math.min(Math.max(prev.scale + delta, 0.5), 2);
-      const deltaScale = newScale - prev.scale;
-      const newPos = {
-        x: prev.position.x - prev.position.x * deltaScale,
-        y: prev.position.y - prev.position.y * deltaScale,
-      };
-      const boundedPos = getBoundedPosition(newPos.x, newPos.y);
-      return { ...prev, scale: newScale, position: boundedPos };
-    });
-  };
+  const handleZoom = useCallback(
+    (delta: number) => {
+      setState((prev) => {
+        const newScale = Math.min(Math.max(prev.scale + delta, 0.5), 2);
+        const deltaScale = newScale - prev.scale;
+        const newPos = {
+          x: prev.position.x - prev.position.x * deltaScale,
+          y: prev.position.y - prev.position.y * deltaScale,
+        };
+        const boundedPos = getBoundedPosition(newPos.x, newPos.y);
+        return { ...prev, scale: newScale, position: boundedPos };
+      });
+    },
+    [getBoundedPosition]
+  );
 
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
@@ -115,7 +124,7 @@ export default function MediaPreview({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onNext, onPrev, hasNext, hasPrev, state.scale]);
+  }, [onNext, onPrev, hasNext, hasPrev, state.scale, handleZoom]);
 
   return (
     <div className="fixed inset-0 w-screen h-screen max-w-none p-0 bg-black/50 z-[9999]">

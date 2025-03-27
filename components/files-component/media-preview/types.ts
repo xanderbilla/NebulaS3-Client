@@ -4,13 +4,13 @@ export interface Position {
 }
 
 export interface MediaPreviewProps {
-  onClose: () => void;
-  title: string;
-  mediaUrl: string;
-  onNext?: () => void;
-  onPrev?: () => void;
-  hasNext?: boolean;
-  hasPrev?: boolean;
+  readonly onClose: () => void;
+  readonly title: string;
+  readonly mediaUrl: string;
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
+  readonly hasNext?: boolean;
+  readonly hasPrev?: boolean;
 }
 
 export interface PreviewState {

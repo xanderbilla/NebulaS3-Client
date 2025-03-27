@@ -2,13 +2,13 @@ import React from "react";
 import { X, Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 
 interface ToolbarProps {
-  title: string;
-  onClose: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onRotate: () => void;
-  onDownload: () => void;
-  scale: number;
+  readonly title: string;
+  readonly onClose: () => void;
+  readonly onZoomIn: () => void;
+  readonly onZoomOut: () => void;
+  readonly onRotate: () => void;
+  readonly onDownload: () => void;
+  readonly scale: number;
 }
 
 export function Toolbar({

@@ -4,6 +4,7 @@ import React, {
   MouseEvent,
   WheelEvent,
   useRef,
+  useCallback,
 } from "react";
 import Image from "next/image";
 import {
@@ -17,10 +18,10 @@ import {
 } from "lucide-react";
 
 interface MediaPreviewProps {
-  onClose: () => void;
-  title: string;
-  mediaUrl: string;
-  type:
+  readonly onClose: () => void;
+  readonly title: string;
+  readonly mediaUrl: string;
+  readonly type:
     | "document"
     | "compressed"
     | "image"
@@ -28,10 +29,10 @@ interface MediaPreviewProps {
     | "video"
     | "folder"
     | "unknown";
-  onNext?: () => void;
-  onPrev?: () => void;
-  hasNext?: boolean;
-  hasPrev?: boolean;
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
+  readonly hasNext?: boolean;
+  readonly hasPrev?: boolean;
 }
 
 interface Position {
@@ -40,13 +41,13 @@ interface Position {
 }
 
 interface ToolbarProps {
-  title: string;
-  onClose: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onRotate: () => void;
-  onDownload: () => void;
-  scale: number;
+  readonly title: string;
+  readonly onClose: () => void;
+  readonly onZoomIn: () => void;
+  readonly onZoomOut: () => void;
+  readonly onRotate: () => void;
+  readonly onDownload: () => void;
+  readonly scale: number;
 }
 
 function Toolbar({
@@ -131,37 +132,44 @@ export default function MediaPreview({
     error: null as string | null,
   });
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLButtonElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  const getBoundedPosition = (newX: number, newY: number): Position => {
-    if (!containerRef.current || !imageRef.current) return { x: newX, y: newY };
+  const getBoundedPosition = useCallback(
+    (newX: number, newY: number): Position => {
+      if (!containerRef.current || !imageRef.current)
+        return { x: newX, y: newY };
 
-    const container = containerRef.current.getBoundingClientRect();
-    const image = imageRef.current.getBoundingClientRect();
-    const scaledWidth = image.width * state.scale;
-    const scaledHeight = image.height * state.scale;
-    const maxX = Math.max(0, (scaledWidth - container.width) / 2);
-    const maxY = Math.max(0, (scaledHeight - container.height) / 2);
+      const container = containerRef.current.getBoundingClientRect();
+      const image = imageRef.current.getBoundingClientRect();
+      const scaledWidth = image.width * state.scale;
+      const scaledHeight = image.height * state.scale;
+      const maxX = Math.max(0, (scaledWidth - container.width) / 2);
+      const maxY = Math.max(0, (scaledHeight - container.height) / 2);
 
-    return {
-      x: Math.min(Math.max(newX, -maxX), maxX),
-      y: Math.min(Math.max(newY, -maxY), maxY),
-    };
-  };
-
-  const handleZoom = (delta: number) => {
-    setState((prev) => {
-      const newScale = Math.min(Math.max(prev.scale + delta, 0.5), 2);
-      const deltaScale = newScale - prev.scale;
-      const newPos = {
-        x: prev.position.x - prev.position.x * deltaScale,
-        y: prev.position.y - prev.position.y * deltaScale,
+      return {
+        x: Math.min(Math.max(newX, -maxX), maxX),
+        y: Math.min(Math.max(newY, -maxY), maxY),
       };
-      const boundedPos = getBoundedPosition(newPos.x, newPos.y);
-      return { ...prev, scale: newScale, position: boundedPos };
-    });
-  };
+    },
+    [state.scale]
+  );
+
+  const handleZoom = useCallback(
+    (delta: number) => {
+      setState((prev) => {
+        const newScale = Math.min(Math.max(prev.scale + delta, 0.5), 2);
+        const deltaScale = newScale - prev.scale;
+        const newPos = {
+          x: prev.position.x - prev.position.x * deltaScale,
+          y: prev.position.y - prev.position.y * deltaScale,
+        };
+        const boundedPos = getBoundedPosition(newPos.x, newPos.y);
+        return { ...prev, scale: newScale, position: boundedPos };
+      });
+    },
+    [getBoundedPosition]
+  );
 
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
@@ -218,7 +226,7 @@ export default function MediaPreview({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onNext, onPrev, hasNext, hasPrev, state.scale]);
+  }, [onNext, onPrev, hasNext, hasPrev, state.scale, handleZoom]);
 
   const handleError = (error: string) => {
     setState((prev) => ({ ...prev, isLoading: false, error }));
@@ -264,6 +272,7 @@ export default function MediaPreview({
             onError={() => handleError("Failed to load video")}
           >
             <source src={mediaUrl} type="video/mp4" />
+            <track kind="captions" src="" label="No captions available" />
             Your browser does not support the video tag.
           </video>
         );
@@ -278,6 +287,7 @@ export default function MediaPreview({
             onError={() => handleError("Failed to load audio")}
           >
             <source src={mediaUrl} type="audio/mpeg" />
+            <track kind="captions" src="" label="No captions available" />
             Your browser does not support the audio tag.
           </audio>
         );
@@ -308,9 +318,9 @@ export default function MediaPreview({
         scale={state.scale}
       />
 
-      <div
+      <button
         ref={containerRef}
-        tabIndex={0}
+        type="button"
         aria-label={`Preview container for ${title}`}
         className="w-full h-full flex items-center justify-center pt-16 overflow-hidden focus:outline-none"
         onMouseMove={handleMouseMove}
@@ -338,7 +348,7 @@ export default function MediaPreview({
             renderMedia()
           )}
         </div>
-      </div>
+      </button>
 
       {hasPrev && (
         <button

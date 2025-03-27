@@ -32,7 +32,7 @@ interface FileData {
 }
 
 interface FileProps {
-  type:
+  readonly type:
     | "document"
     | "compressed"
     | "image"
@@ -40,10 +40,10 @@ interface FileProps {
     | "video"
     | "folder"
     | "unknown";
-  data: FileData;
-  onClick?: () => void;
-  icon?: React.ElementType;
-  bucketName?: string;
+  readonly data: FileData;
+  readonly onClick?: () => void;
+  readonly icon?: React.ElementType;
+  readonly bucketName?: string;
 }
 
 export default function Files({

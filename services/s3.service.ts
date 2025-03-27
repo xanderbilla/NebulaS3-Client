@@ -60,7 +60,7 @@ class S3Service extends BaseService {
 
       console.log("Raw response from presigned URL request:", response);
 
-      if (!response || !response.data) {
+      if (!response?.data) {
         console.error("Invalid response format:", response);
         throw new Error("Invalid response format from server");
       }

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React, { useRef, MouseEvent, WheelEvent } from "react";
 
 interface Position {
@@ -6,18 +7,18 @@ interface Position {
 }
 
 interface ImageViewerProps {
-  title: string;
-  mediaUrl: string;
-  isLoading: boolean;
-  scale: number;
-  rotation: number;
-  position: Position;
-  isDragging: boolean;
+  readonly title: string;
+  readonly mediaUrl: string;
+  readonly isLoading: boolean;
+  readonly scale: number;
+  readonly rotation: number;
+  readonly position: Position;
+  readonly isDragging: boolean;
   onLoad: () => void;
-  onMouseDown: (e: MouseEvent) => void;
-  onMouseMove: (e: MouseEvent) => void;
-  onMouseUp: () => void;
-  onWheel: (e: WheelEvent) => void;
+  readonly onMouseDown: (e: MouseEvent) => void;
+  readonly onMouseMove: (e: MouseEvent) => void;
+  readonly onMouseUp: () => void;
+  readonly onWheel: (e: WheelEvent) => void;
 }
 
 export function ImageViewer({
@@ -34,14 +35,14 @@ export function ImageViewer({
   onMouseUp,
   onWheel,
 }: ImageViewerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLButtonElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
   return (
-    <div
+    <button
       ref={containerRef}
-      role="presentation"
-      tabIndex={0}
+      type="button"
+      aria-label={`Image viewer container for ${title}`}
       className="w-full h-full flex items-center justify-center pt-16 overflow-hidden focus:outline-none"
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -54,7 +55,7 @@ export function ImageViewer({
             <div className="w-16 h-16 bg-white/10 animate-pulse" />
           </div>
         )}
-        <img
+        <Image
           ref={imageRef}
           src={mediaUrl}
           alt={title}
@@ -70,6 +71,6 @@ export function ImageViewer({
           draggable={false}
         />
       </div>
-    </div>
+    </button>
   );
 }

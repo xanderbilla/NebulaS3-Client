@@ -2,10 +2,10 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface NavigationProps {
-  onNext?: () => void;
-  onPrev?: () => void;
-  hasNext?: boolean;
-  hasPrev?: boolean;
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
+  readonly hasNext?: boolean;
+  readonly hasPrev?: boolean;
 }
 
 export function Navigation({
