@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import dynamic from "next/dynamic";
-import { MediaPreviewProps, PreviewState } from "./types";
+import { MediaPreviewProps, PreviewState } from "../../../types/media";
 
 // Dynamically import components
 const Toolbar = dynamic(() =>
