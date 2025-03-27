@@ -14,7 +14,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Bucket } from "@/types/bucket";
-import HealthCheck from "./health-check";
 import useBuckets from "@/hooks/useBuckets";
 import { NavSupport } from "./nav-support";
 
@@ -71,7 +70,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavSupport support={data.support} />
       </SidebarContent>
-      <HealthCheck className="bg-transparent dark:bg-transparent" />
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
