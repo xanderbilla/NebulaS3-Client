@@ -1,12 +1,8 @@
 import Cookies from "js-cookie";
 
-export interface RequestConfig extends RequestInit {
-  signal?: AbortSignal;
-}
+export interface RequestConfig extends RequestInit {}
 
 export class BaseService {
-  private abortControllers: Map<string, AbortController> = new Map();
-
   constructor(protected readonly baseURL: string) {}
 
   protected getHeaders() {
@@ -54,17 +50,9 @@ export class BaseService {
     config: RequestConfig = {},
     requestId: string
   ): Promise<T> {
-    // Cancel any existing request with the same ID
-    this.cancelRequest(requestId);
-
-    // Create new abort controller for this request
-    const controller = new AbortController();
-    this.abortControllers.set(requestId, controller);
-
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...config,
-        signal: controller.signal,
         headers: {
           ...this.getHeaders(),
           ...config.headers,
@@ -75,21 +63,6 @@ export class BaseService {
     } catch (error) {
       console.error("Request error:", error);
       throw error;
-    } finally {
-      // Clean up abort controller
-      this.abortControllers.delete(requestId);
     }
-  }
-
-  cancelRequest(requestId: string) {
-    const controller = this.abortControllers.get(requestId);
-    if (controller) {
-      controller.abort();
-    }
-  }
-
-  cancelAllRequests() {
-    this.abortControllers.forEach((controller) => controller.abort());
-    this.abortControllers.clear();
   }
 }

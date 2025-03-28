@@ -63,7 +63,7 @@ export default function Page({ params }: PageProps) {
 
       setFileData(response.data);
     } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
+      if (err instanceof Error) {
         console.error("Error fetching files:", err);
         setError(err.message || "Failed to fetch files");
       }
@@ -75,12 +75,6 @@ export default function Page({ params }: PageProps) {
   React.useEffect(() => {
     fetchFiles();
   }, [fetchFiles]);
-
-  React.useEffect(() => {
-    return () => {
-      s3Service.cancelAllRequests();
-    };
-  }, []);
 
   const handleFolderClick = (folder: S3Folder) => {
     setCurrentPath(folder.key);
