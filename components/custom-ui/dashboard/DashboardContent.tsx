@@ -10,4 +10,3 @@ export default function DashboardContent() {
     </div>
   );
 }
-export function DashboardContent() { return <div>Dashboard Content</div> }
