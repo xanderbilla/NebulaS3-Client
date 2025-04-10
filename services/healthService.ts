@@ -18,4 +18,3 @@ export const checkHealth = async (): Promise<HealthResponse> => {
     throw error;
   }
 };
-export async function checkHealth() { return { status: "OK" } }
