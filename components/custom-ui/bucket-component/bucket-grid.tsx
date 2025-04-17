@@ -10,4 +10,3 @@ export default function BucketGrid({ buckets, onDelete }: Props) {
   // This is a wrapper around the refactored component to maintain backwards compatibility
   return <BucketGridRefactored buckets={buckets} onDelete={onDelete} />;
 }
-export function BucketGrid() { return <div>Bucket Grid</div> }

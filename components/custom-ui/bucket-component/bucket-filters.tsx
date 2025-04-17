@@ -24,4 +24,3 @@ export default function BucketFilters({
     </div>
   );
 }
-export function BucketFilters() { return <div>Filter Buckets</div> }
