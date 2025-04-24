@@ -23,4 +23,3 @@ export default function Navbar() {
     </nav>
   );
 }
-export function Navbar() { return <nav>Navbar</nav> }
