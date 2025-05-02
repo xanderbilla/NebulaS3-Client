@@ -57,4 +57,3 @@ function Button({
 }
 
 export { Button, buttonVariants }
-export function Button() { return <button>Click me</button> }

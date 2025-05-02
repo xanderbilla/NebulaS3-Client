@@ -38,4 +38,3 @@ export default function CustomButton({
     </button>
   );
 }
-export function CustomButton() { return <button className="custom">Custom Button</button> }
