@@ -1,13 +1,9 @@
-import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import BackgroundShape from "@/components/custom-ui/home/BackgroundShape";
 import HomeHero from "@/components/custom-ui/home/HomeHero";
-import Footer from "@/components/layout/Footer";
-import Navbar from "@/components/layout/Navbar";
 
-// Use a simple loading component instead of a full skeleton
-function SimpleLoading() {
-  return <div className="animate-pulse h-20 w-full bg-gray-200 dark:bg-gray-800 rounded-md"></div>;
-}
+const Footer = dynamic(() => import("@/components/layout/Footer"));
+const Navbar = dynamic(() => import("@/components/layout/Navbar"));
 
 export default function Home() {
   return (
@@ -16,9 +12,8 @@ export default function Home() {
       <div className="relative z-20">
         <Navbar />
       </div>
-      <Suspense fallback={<SimpleLoading />}>
-        <HomeHero />
-      </Suspense>
+      {/* <NoticeBanner /> */}
+      <HomeHero />
       <Footer />
     </div>
   );
