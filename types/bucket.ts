@@ -1,9 +1,7 @@
 export interface Bucket {
+  id: string;
   bucketName: string;
-  size: string;
-  createdOn: Date;
   region: string;
-  files: number;
-  folders: number;
-  isPublic: boolean;
+  createdOn: Date;
+  size: string;
 }
