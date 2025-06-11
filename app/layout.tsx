@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
+import QueryProvider from "@/components/QueryProvider";
 
 export const metadata: Metadata = {
   title: "NebulaS3",
@@ -23,10 +24,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className={`flex flex-col min-h-screen dark:bg-black dark:text-white relative overflow-hidden`}>
-              {children}
-            </div>
-            <Toaster duration={3000} richColors/>
+            <QueryProvider>
+              <div className={`flex flex-col min-h-screen dark:bg-black dark:text-white relative overflow-hidden`}>
+                {children}
+              </div>
+              <Toaster duration={3000} richColors/>
+            </QueryProvider>
           </ThemeProvider>
         </body>
       </html>

@@ -4,38 +4,16 @@ import { Menu } from "lucide-react";
 import { ModeToggle } from "@/components/theme-mode/ModeToggle";
 import CustomButton from "@/components/ui/custom-button";
 import LogoutIcon from "@/components/icons/LogoutIcon";
-import { useState, useEffect } from "react";
 
 interface NavActionsProps {
-  onLogout: () => void;
-  onMenuClick: () => void;
+  readonly onLogout: () => void;
+  readonly onMenuClick: () => void;
 }
 
 export default function NavActions({ onLogout, onMenuClick }: NavActionsProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  if (!mounted) {
-    return (
-      <div className="flex items-center gap-4">
-        <div className="p-2 rounded-full bg-sidebar-accent/50 animate-pulse">
-          <div className="h-5 w-5" />
-        </div>
-        <div className="hidden md:block h-10 w-24 bg-sidebar-accent/50 animate-pulse rounded-md" />
-        <div className="h-10 w-24 bg-sidebar-accent/50 animate-pulse rounded-md" />
-        <div className="p-2 rounded-full bg-sidebar-accent/50 animate-pulse md:hidden">
-          <div className="h-5 w-5" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center gap-4">
       <ModeToggle />{" "}
-      
       <CustomButton title="Logout" onClick={onLogout} icon={<LogoutIcon />} />{" "}
       <button
         onClick={onMenuClick}

@@ -34,9 +34,11 @@ export default function SelectRegions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onRegionChange(null)}>
-          <div className="flex items-center">
-            {!selectedRegion && <Check className="h-4 w-4 mr-2" />}
+          <div className="flex items-center w-full justify-between">
             <span>All Regions</span>
+            <div className="w-4 h-4 flex-shrink-0 ml-2">
+              {!selectedRegion && <Check className="h-4 w-4" />}
+            </div>
           </div>
         </DropdownMenuItem>
         
@@ -45,9 +47,11 @@ export default function SelectRegions({
             key={region} 
             onClick={() => onRegionChange(region)}
           >
-            <div className="flex items-center">
-              {selectedRegion === region && <Check className="h-4 w-4 mr-2" />}
+            <div className="flex items-center w-full justify-between">
               <span>{region}</span>
+              <div className="w-4 h-4 flex-shrink-0 ml-2">
+                {selectedRegion === region && <Check className="h-4 w-4" />}
+              </div>
             </div>
           </DropdownMenuItem>
         ))}

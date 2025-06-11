@@ -1,26 +1,26 @@
-"use client";
+import { Metadata } from "next";
+import BackNavigation from "@/components/custom-ui/navigation/back-navigation";
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import CustomButton from "@/components/ui/custom-button";
-import { ArrowLeft } from "lucide-react";
+export const metadata: Metadata = {
+  title: "About | Nebula S3",
+  description: "Learn about NebulaS3 - our advanced storage solution built on the foundation of S3 with enhanced capabilities.",
+  keywords: [
+    "About",
+    "NebulaS3",
+    "S3 Storage",
+    "Cloud Storage",
+    "Storage Solution",
+    "Features",
+  ],
+  authors: [{ name: "Nebula S3 Team" }],
+  robots: "index, follow",
+};
 
-export default function Page() {
-  const router = useRouter();
-
-  const handleBack = () => {
-    router.back();
-  };
-
+export default function AboutPage() {
   return (
     <div className="grid grid-rows-[auto_1fr_auto] min-h-[calc(100vh-6rem)] p-8 pb-20 gap-8 pt-20 sm:p-20">
       <div className="max-w-7xl mx-auto w-full">
-        <CustomButton
-          title="Previous Page"
-          variant="link"
-          onClick={handleBack}
-          icon={<ArrowLeft className="size-4" />}
-        />
+        <BackNavigation />
       </div>
 
       <main className="flex flex-col gap-8 max-w-7xl mx-auto w-full">
