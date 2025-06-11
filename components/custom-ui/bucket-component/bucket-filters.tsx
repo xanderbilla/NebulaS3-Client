@@ -8,6 +8,9 @@ export default function BucketFilters({
   setSearchTerm,
   activeFilter,
   setActiveFilter,
+  regions = [],
+  selectedRegion,
+  onRegionChange,
 }: BucketFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -19,7 +22,11 @@ export default function BucketFilters({
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
         />
-        <SelectRegions />
+        <SelectRegions 
+          regions={regions}
+          selectedRegion={selectedRegion}
+          onRegionChange={onRegionChange}
+        />
       </div>
     </div>
   );

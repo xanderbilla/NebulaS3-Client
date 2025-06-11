@@ -40,22 +40,37 @@ export default function BucketsPage() {
   const [activeFilter, setActiveFilter] = useState<"size" | "date" | null>(
     null
   );
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Get unique regions from mock data
+  const availableRegions = Array.from(
+    new Set(
+      mockBuckets
+        .map((bucket) => bucket.region)
+        .filter((region): region is string => Boolean(region))
+    )
+  );
+
   const filteredBuckets = mockBuckets
     .filter((bucket) =>
       bucket.bucketName.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    .filter((bucket) => !selectedRegion || bucket.region === selectedRegion)
     .sort((a, b) => {
       if (activeFilter === "size") {
-        const sizeA = parseFloat(a.size);
-        const sizeB = parseFloat(b.size);
+        const sizeA = parseFloat(a.size ?? "0");
+        const sizeB = parseFloat(b.size ?? "0");
         return sizeB - sizeA;
       } else if (activeFilter === "date") {
-        return b.createdOn.getTime() - a.createdOn.getTime();
+        const dateA =
+          typeof a.createdOn === "string" ? new Date(a.createdOn) : a.createdOn;
+        const dateB =
+          typeof b.createdOn === "string" ? new Date(b.createdOn) : b.createdOn;
+        return dateB.getTime() - dateA.getTime();
       }
       return 0;
     });
@@ -90,6 +105,9 @@ export default function BucketsPage() {
             setSearchTerm={setSearchQuery}
             activeFilter={activeFilter}
             setActiveFilter={setActiveFilter}
+            regions={availableRegions}
+            selectedRegion={selectedRegion}
+            onRegionChange={setSelectedRegion}
           />
         </Suspense>
 

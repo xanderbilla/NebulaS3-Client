@@ -2,7 +2,17 @@
 
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useRouter } from "next/navigation";
+
+// Simple toast implementation
+const toast = {
+  success: (message: string) => {
+    console.log("✅ Success:", message);
+  },
+  error: (message: string) => {
+    console.error("❌ Error:", message);
+  },
+};
 
 // Inline minimal components to reduce imports
 const Button = ({
@@ -103,8 +113,10 @@ export default function LoginForm({
     secretKey: "",
     region: "ap-south-1",
   });
-  const { login, loading, isRedirecting } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isClientLoading, setIsClientLoading] = useState(true);
+  const router = useRouter();
 
   // Simulate initial loading state using useEffect
   useEffect(() => {
@@ -116,7 +128,25 @@ export default function LoginForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(credentials);
+    setLoading(true);
+
+    try {
+      // Hardcoded login - simulate successful authentication
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API call
+
+      // Set hardcoded session tokens
+      document.cookie = `sessionToken=hardcoded-session-token; path=/; Secure; SameSite=Strict`;
+      document.cookie = `accessKey=${credentials.accessKey}; path=/; Secure; SameSite=Strict`;
+
+      toast.success("Login successful!");
+      setIsRedirecting(true);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to validate credentials");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isRedirecting) {

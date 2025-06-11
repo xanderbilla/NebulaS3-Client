@@ -2,7 +2,6 @@
 
 import { Menu } from "lucide-react";
 import { ModeToggle } from "@/components/theme-mode/ModeToggle";
-import HealthCheck from "@/components/HealthCheck";
 import CustomButton from "@/components/ui/custom-button";
 import LogoutIcon from "@/components/icons/LogoutIcon";
 import { useState, useEffect } from "react";
@@ -36,10 +35,7 @@ export default function NavActions({ onLogout, onMenuClick }: NavActionsProps) {
   return (
     <div className="flex items-center gap-4">
       <ModeToggle />{" "}
-      <HealthCheck
-        compact
-        className="py-2 hidden md:block bg-white/10 dark:bg-black/10 backdrop-blur-sm border-white/5 dark:border-white/5"
-      />
+      
       <CustomButton title="Logout" onClick={onLogout} icon={<LogoutIcon />} />{" "}
       <button
         onClick={onMenuClick}

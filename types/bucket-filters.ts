@@ -1,6 +1,9 @@
 export interface BucketFiltersProps {
   searchTerm: string;
-  setSearchTerm: (value: string) => void;
+  setSearchTerm: (term: string) => void;
   activeFilter: "size" | "date" | null;
   setActiveFilter: (filter: "size" | "date" | null) => void;
+  regions?: string[];
+  selectedRegion?: string | null;
+  onRegionChange?: (region: string | null) => void;
 }

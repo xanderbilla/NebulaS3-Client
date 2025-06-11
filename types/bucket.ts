@@ -1,7 +1,12 @@
 export interface Bucket {
-  id: string;
+  id?: string;
   bucketName: string;
-  region: string;
-  createdOn: Date;
-  size: string;
+  region?: string;
+  createdOn: string | Date;
+  size?: string;
+  numberOfFolders?: number;
+  numberOfObjects?: number;
+  lastUsed?: string | Date;
+  versioningEnabled?: boolean;
+  storageClass?: string;
 }
