@@ -12,12 +12,13 @@ interface ModeToggleProps {
 }
 
 export function ModeToggle({ className }: ModeToggleProps) {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
   if (!mounted) {
     return (
       <div className="flex items-center gap-2">
@@ -26,6 +27,9 @@ export function ModeToggle({ className }: ModeToggleProps) {
       </div>
     );
   }
+
+  // Use resolvedTheme for more accurate theme detection
+  const isDark = resolvedTheme === "dark";
 
   const baseButton =
     "w-10 h-10 flex items-center justify-center rounded-full transition-colors";
@@ -43,11 +47,11 @@ export function ModeToggle({ className }: ModeToggleProps) {
         <span className="sr-only">GitHub repository</span>
       </Link>{" "}
       <button
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={() => setTheme(isDark ? "light" : "dark")}
         aria-label="Toggle theme"
         className={cn(baseButton, "glass-hover", className)}
       >
-        {theme === "dark" ? (
+        {isDark ? (
           <Sun className="h-5 w-5 text-yellow-400" />
         ) : (
           <Moon className="h-5 w-5 text-indigo-600" />
