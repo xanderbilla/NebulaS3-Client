@@ -1,14 +1,18 @@
 import FilterButtons from "./filter";
 import SearchBar from "./search-bar";
 import SelectRegions from "./select-regions";
-import type { BucketFiltersProps } from "@/types/bucket-filters";
+import type { BucketFiltersProps } from "@/types/ui";
 
 export default function BucketFilters({
   searchTerm,
   setSearchTerm,
   activeFilter,
   setActiveFilter,
-}: BucketFiltersProps) {
+  regions = [],
+  selectedRegion,
+  onRegionChange,
+  sortOrder = "desc",
+}: Readonly<BucketFiltersProps>) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
       <div className="flex-1 w-full">
@@ -18,8 +22,13 @@ export default function BucketFilters({
         <FilterButtons
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
+          sortOrder={sortOrder}
         />
-        <SelectRegions />
+        <SelectRegions
+          regions={regions}
+          selectedRegion={selectedRegion}
+          onRegionChange={onRegionChange}
+        />
       </div>
     </div>
   );

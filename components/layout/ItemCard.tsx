@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import type { ItemCardProps } from "@/types/item-card";
+import type { ItemCardProps } from "@/types/ui";
 
 const badgeColors = {
   green:
@@ -30,7 +30,7 @@ export default function ItemCard({
     month: "long",
     day: "numeric",
   },
-}: ItemCardProps) {
+}: Readonly<ItemCardProps>) {
   return (
     <Card className={`p-6 relative glass-card glass-card-hover ${className}`}>
       {actions && <div className="absolute top-4 right-4">{actions}</div>}
@@ -42,7 +42,7 @@ export default function ItemCard({
 
             {badges.map((badge, index) => (
               <span
-                key={index}
+                key={`badge-${badge.label}-${index}`}
                 className={`inline-flex items-center truncate rounded-full glass-badge ${
                   badgeColors[badge.color]
                 }`}

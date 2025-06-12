@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { CustomButtonProps } from "@/types/custom-button";
+import type { CustomButtonProps } from "@/types/ui";
 
 export default function CustomButton({
   title,
@@ -8,7 +8,7 @@ export default function CustomButton({
   variant = "default",
   className,
   ...props
-}: CustomButtonProps) {
+}: Readonly<CustomButtonProps>) {
   const variantStyles = {
     default: "glass-button",
     outline:
