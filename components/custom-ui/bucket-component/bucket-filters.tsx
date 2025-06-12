@@ -11,6 +11,7 @@ export default function BucketFilters({
   regions = [],
   selectedRegion,
   onRegionChange,
+  sortOrder = "desc",
 }: Readonly<BucketFiltersProps>) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -21,6 +22,7 @@ export default function BucketFilters({
         <FilterButtons
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
+          sortOrder={sortOrder}
         />
         <SelectRegions
           regions={regions}

@@ -7,7 +7,7 @@ export default function BucketCardSkeleton() {
       <div className="absolute top-4 right-4">
         <Skeleton className="h-8 w-8 rounded-md" />
       </div>
-      <div className="pr-8 space-y-3">
+      <div className="pr-8 space-y-4">
         {/* Icon and badges */}
         <div className="flex items-center gap-3">
           <Skeleton className="h-5 w-5 rounded-full" />
@@ -15,13 +15,15 @@ export default function BucketCardSkeleton() {
         </div>
 
         {/* Bucket name */}
-        <Skeleton className="h-6 w-3/4" />
+        <Skeleton className="h-4 w-3/4" />
 
-        {/* Description (size and files) */}
-        <Skeleton className="h-4 w-2/3" />
+        <div className="space-y-1">
+          {/* Description (size and files) */}
+        <Skeleton className="h-3 w-2/3" />
 
         {/* Date */}
-        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-3 w-1/2" />
+        </div>
       </div>
     </Card>
   );

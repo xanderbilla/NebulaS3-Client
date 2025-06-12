@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eye, Trash2, TrashIcon, BoxIcon } from "lucide-react";
+import { toast } from "sonner";
 import ActionMenu, { ActionItem } from "@/components/layout/ActionMenu";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import ItemCard from "@/components/layout/ItemCard";
@@ -19,10 +20,6 @@ export interface BucketGridProps {
   readonly isLoading?: boolean;
   readonly className?: string;
   readonly gridClassName?: string;
-  // External filter state
-  readonly externalSearchTerm?: string;
-  readonly externalActiveFilter?: "size" | "date" | null;
-  readonly externalSelectedRegion?: string | null;
 }
 
 export default function BucketGrid({
@@ -34,10 +31,6 @@ export default function BucketGrid({
   isLoading = false,
   className = "",
   gridClassName = "",
-  // External filter state (directly used, no internal state needed)
-  externalSearchTerm = "",
-  externalActiveFilter = null,
-  externalSelectedRegion = null,
 }: BucketGridProps) {
   const [bucketToDelete, setBucketToDelete] = useState<string | null>(null);
   const [bucketToEmpty, setBucketToEmpty] = useState<string | null>(null);
@@ -49,73 +42,32 @@ export default function BucketGrid({
   const deleteBucketMutation = useDeleteBucket();
   const emptyBucketMutation = useEmptyBucket();
 
-  // Helper function to parse size for proper sorting
-  const parseSize = (sizeStr: string): number => {
-    const regex = /([0-9.]+)\s*(GB|MB|KB|B)/i;
-    const match = regex.exec(sizeStr);
-
-    if (!match) return 0;
-
-    const value = parseFloat(match[1]);
-    const unit = match[2].toUpperCase();
-
-    switch (unit) {
-      case "GB":
-        return value * 1024 * 1024 * 1024;
-      case "MB":
-        return value * 1024 * 1024;
-      case "KB":
-        return value * 1024;
-      case "B":
-        return value;
-      default:
-        return 0;
-    }
-  };
-
-  // Apply filters to buckets
-  const filteredBuckets = buckets
-    .filter((bucket) => {
-      // Search term filter
-      if (
-        externalSearchTerm &&
-        !bucket.bucketName
-          .toLowerCase()
-          .includes(externalSearchTerm.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Region filter
-      if (
-        externalSelectedRegion &&
-        bucket.region.toUpperCase() !== externalSelectedRegion.toUpperCase()
-      ) {
-        return false;
-      }
-
-      return true;
-    })
-    .sort((a, b) => {
-      // Apply sorting based on active filter
-      if (externalActiveFilter === "date") {
-        const dateA = new Date(a.createdOn).getTime();
-        const dateB = new Date(b.createdOn).getTime();
-        return dateB - dateA; // newest first
-      }
-
-      if (externalActiveFilter === "size") {
-        const sizeA = parseSize(a.size);
-        const sizeB = parseSize(b.size);
-        return sizeB - sizeA; // largest first
-      }
-
-      // Default sort by name
-      return a.bucketName.localeCompare(b.bucketName);
-    });
+  // Display buckets directly since filtering is handled server-side
+  const displayBuckets = buckets;
 
   const handleDelete = (bucketId: string): void => {
-    setBucketToDelete(bucketId);
+    const bucket = buckets.find((b) => b.id === bucketId);
+    if (!bucket) return;
+
+    // Check if bucket has content and show warning
+    // A bucket is considered non-empty if it has objects OR significant size
+    const hasObjects = bucket.numberOfObjects > 0;
+    const hasSize =
+      bucket.size &&
+      bucket.size !== "0 B" &&
+      bucket.size !== "0B" &&
+      bucket.size !== "0";
+
+    if (hasObjects || hasSize) {
+      toast.error("Cannot delete bucket with content", {
+        description:
+          "You can't delete a bucket with content. Please empty the bucket first.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    setBucketToDelete(bucket.bucketName); // Store bucket name instead of ID
     setDeleteDialogOpen(true);
   };
 
@@ -124,8 +76,26 @@ export default function BucketGrid({
       try {
         await deleteBucketMutation.mutateAsync(bucketToDelete);
         onDelete(bucketToDelete);
+        toast.success(`Bucket "${bucketToDelete}" deleted successfully`);
       } catch (error) {
-        console.error("Failed to delete bucket:", error);
+        // Extract error message from API response
+        let errorMessage = "Failed to delete bucket";
+        if (error && typeof error === "object") {
+          const apiError = error as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          if (apiError.response?.data?.message) {
+            errorMessage = apiError.response.data.message;
+          } else if (apiError.message) {
+            errorMessage = apiError.message;
+          }
+        }
+
+        toast.error("Delete Failed", {
+          description: errorMessage,
+          duration: 5000,
+        });
       } finally {
         setDeleteDialogOpen(false);
         setBucketToDelete(null);
@@ -134,7 +104,26 @@ export default function BucketGrid({
   };
 
   const handleEmpty = (bucketId: string): void => {
-    setBucketToEmpty(bucketId);
+    const bucket = buckets.find((b) => b.id === bucketId);
+    if (!bucket) return;
+
+    // Check if bucket is already empty
+    // A bucket is considered empty if it has no objects AND no significant size
+    const hasObjects = bucket.numberOfObjects > 0;
+    const hasSize =
+      bucket.size &&
+      bucket.size !== "0 B" &&
+      bucket.size !== "0B" &&
+      bucket.size !== "0";
+
+    if (!hasObjects && !hasSize) {
+      toast.info("Bucket is already empty", {
+        description: "This bucket doesn't contain any objects.",
+      });
+      return;
+    }
+
+    setBucketToEmpty(bucket.bucketName); // Store bucket name instead of ID
     setEmptyDialogOpen(true);
   };
 
@@ -143,8 +132,26 @@ export default function BucketGrid({
       try {
         await emptyBucketMutation.mutateAsync(bucketToEmpty);
         onEmpty(bucketToEmpty);
+        toast.success(`Bucket "${bucketToEmpty}" emptied successfully`);
       } catch (error) {
-        console.error("Failed to empty bucket:", error);
+        // Extract error message from API response
+        let errorMessage = "Failed to empty bucket";
+        if (error && typeof error === "object") {
+          const apiError = error as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          if (apiError.response?.data?.message) {
+            errorMessage = apiError.response.data.message;
+          } else if (apiError.message) {
+            errorMessage = apiError.message;
+          }
+        }
+
+        toast.error("Empty Failed", {
+          description: errorMessage,
+          duration: 5000,
+        });
       } finally {
         setEmptyDialogOpen(false);
         setBucketToEmpty(null);
@@ -170,36 +177,47 @@ export default function BucketGrid({
     }
   };
 
-  const getActionItems = (bucket: Bucket): ActionItem[] => [
-    {
-      label: "View Details",
-      icon: <Eye className="h-4 w-4" />,
-      onClick: () => handleViewDetails(bucket.id, bucket.bucketName),
-      className:
-        actionLoading === bucket.id ? "opacity-50 pointer-events-none" : "",
-    },
-    {
-      label: "Empty Bucket",
-      icon: <TrashIcon className="h-4 w-4" />,
-      onClick: () => handleEmpty(bucket.id),
-      className:
-        actionLoading === bucket.id ||
-        bucket.numberOfObjects === 0 ||
-        emptyBucketMutation.isPending
-          ? "opacity-50 pointer-events-none"
-          : "",
-    },
-    {
-      label: "Delete Bucket",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => handleDelete(bucket.id),
-      danger: true,
-      className:
-        actionLoading === bucket.id || deleteBucketMutation.isPending
-          ? "opacity-50 pointer-events-none"
-          : "",
-    },
-  ];
+  const getActionItems = (bucket: Bucket): ActionItem[] => {
+    // Determine if bucket is empty using the same logic as validation
+    const hasObjects = bucket.numberOfObjects > 0;
+    const hasSize =
+      bucket.size &&
+      bucket.size !== "0 B" &&
+      bucket.size !== "0B" &&
+      bucket.size !== "0";
+    const isEmpty = !hasObjects && !hasSize;
+
+    return [
+      {
+        label: "View Details",
+        icon: <Eye className="h-4 w-4" />,
+        onClick: () => handleViewDetails(bucket.id, bucket.bucketName),
+        className:
+          actionLoading === bucket.id ? "opacity-50 pointer-events-none" : "",
+      },
+      {
+        label: "Empty Bucket",
+        icon: <TrashIcon className="h-4 w-4" />,
+        onClick: () => handleEmpty(bucket.id),
+        className:
+          actionLoading === bucket.id ||
+          isEmpty ||
+          emptyBucketMutation.isPending
+            ? "opacity-50 pointer-events-none"
+            : "",
+      },
+      {
+        label: "Delete Bucket",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => handleDelete(bucket.id),
+        danger: true,
+        className:
+          actionLoading === bucket.id || deleteBucketMutation.isPending
+            ? "opacity-50 pointer-events-none"
+            : "",
+      },
+    ];
+  };
 
   const getBadges = (bucket: Bucket): CardBadge[] => {
     const badges: CardBadge[] = [
@@ -217,14 +235,10 @@ export default function BucketGrid({
     <div className="text-center py-12 mt-6">
       <BoxIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
       <h3 className="text-lg font-medium text-muted-foreground mb-2">
-        {externalSearchTerm || externalSelectedRegion
-          ? "No matching buckets found"
-          : "No buckets found"}
+        No buckets found
       </h3>
       <p className="text-sm text-muted-foreground">
-        {externalSearchTerm || externalSelectedRegion
-          ? "Try adjusting your filters"
-          : "Create your first S3 bucket to get started."}
+        Create your first S3 bucket to get started.
       </p>
     </div>
   );
@@ -234,7 +248,7 @@ export default function BucketGrid({
     <div
       className={`grid gap-4 mt-6 ${gridClassName} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`}
     >
-      {filteredBuckets.map((bucket) => {
+      {displayBuckets.map((bucket) => {
         const createdDate = new Date(bucket.createdOn);
 
         return (
@@ -265,8 +279,8 @@ export default function BucketGrid({
         <BucketGridSkeleton count={8} />
       ) : (
         <>
-          {filteredBuckets.length === 0 && renderEmptyState()}
-          {filteredBuckets.length > 0 && renderBucketGrid()}
+          {displayBuckets.length === 0 && renderEmptyState()}
+          {displayBuckets.length > 0 && renderBucketGrid()}
         </>
       )}
 
@@ -277,9 +291,7 @@ export default function BucketGrid({
         title="Delete Bucket"
         description={
           bucketToDelete
-            ? `Are you sure you want to delete "${
-                buckets.find((b) => b.id === bucketToDelete)?.bucketName
-              }"? This action cannot be undone.`
+            ? `Are you sure you want to delete "${bucketToDelete}"? This action cannot be undone.`
             : "Are you sure you want to delete this bucket?"
         }
         onConfirm={confirmDelete}
@@ -295,9 +307,7 @@ export default function BucketGrid({
         title="Empty Bucket"
         description={
           bucketToEmpty
-            ? `Are you sure you want to empty "${
-                buckets.find((b) => b.id === bucketToEmpty)?.bucketName
-              }"? All objects in this bucket will be permanently deleted.`
+            ? `Are you sure you want to empty "${bucketToEmpty}"? All objects in this bucket will be permanently deleted.`
             : "Are you sure you want to empty this bucket?"
         }
         onConfirm={confirmEmpty}

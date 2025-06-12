@@ -2,20 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLogin } from "@/hooks/useAuth";
 import type { LoginCredentials } from "@/types/auth";
 import { ButtonSpinner } from "@/components/ui/spinner";
-
-// Simple toast implementation
-const toast = {
-  success: (message: string) => {
-    console.log("✅ Success:", message);
-  },
-  error: (message: string) => {
-    console.error("❌ Error:", message);
-  },
-};
 
 // Inline minimal components to reduce imports
 const Button = ({
@@ -83,21 +72,11 @@ export default function LoginForm({
     secretKey: "",
     region: "ap-south-1",
   });
-  const router = useRouter();
   const { mutate: login, isPending } = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    login(credentials, {
-      onSuccess: () => {
-        toast.success("Login successful");
-        router.push("/dashboard");
-      },
-      onError: (error) => {
-        toast.error(error?.message ?? "Failed to validate credentials");
-      },
-    });
+    login(credentials);
   };
 
   return (

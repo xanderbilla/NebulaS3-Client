@@ -1,12 +1,17 @@
 import React from "react";
-import { ArrowUpAzIcon, Calendar } from "lucide-react";
+import { ArrowUpAzIcon, Calendar, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Props {
   activeFilter: "size" | "date" | null;
   setActiveFilter: (filter: "size" | "date" | null) => void;
+  sortOrder?: "asc" | "desc";
 }
 
-const FilterButtons = ({ activeFilter, setActiveFilter }: Props) => {
+const FilterButtons = ({
+  activeFilter,
+  setActiveFilter,
+  sortOrder = "desc",
+}: Props) => {
   return (
     <div className="flex gap-2">
       <button
@@ -44,6 +49,12 @@ const FilterButtons = ({ activeFilter, setActiveFilter }: Props) => {
           }`}
         />
         <span>Date</span>
+        {activeFilter === "date" &&
+          (sortOrder === "asc" ? (
+            <ArrowUp className="h-3 w-3 ml-1 text-purple-500 dark:text-purple-400" />
+          ) : (
+            <ArrowDown className="h-3 w-3 ml-1 text-purple-500 dark:text-purple-400" />
+          ))}
       </button>
     </div>
   );
