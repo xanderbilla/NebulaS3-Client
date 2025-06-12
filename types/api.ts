@@ -3,7 +3,7 @@ export interface ApiResponse<T = unknown> {
   statusCode: number;
   message: string;
   timestamp: string;
-  data: T;
+  data?: T;
   status: "SUCCESS" | "FAILED" | "ERROR";
 }
 
@@ -22,7 +22,14 @@ export interface PaginationMeta {
 export interface PaginatedResponse<T> {
   content: T[];
   appliedFilters: Record<string, string | number | boolean>;
-  meta: PaginationMeta;
+  isFirst: boolean;
+  isLast: boolean;
+  totalPages: number;
+  pageSize: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  currentPage: number;
+  totalElements: number;
 }
 
 // Query Parameters

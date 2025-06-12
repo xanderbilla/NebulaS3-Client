@@ -37,7 +37,8 @@ export interface BucketAppliedFilters {
 }
 
 // Bucket List Response Data
-export interface BucketListData extends Omit<PaginatedResponse<Bucket>, 'appliedFilters'> {
+export interface BucketListData
+  extends Omit<PaginatedResponse<Bucket>, "appliedFilters"> {
   appliedFilters: BucketAppliedFilters;
 }
 

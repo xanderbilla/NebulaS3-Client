@@ -44,6 +44,7 @@ export interface BucketFiltersProps {
   regions?: string[];
   selectedRegion?: string | null;
   onRegionChange?: (region: string | null) => void;
+  sortOrder?: "asc" | "desc";
 }
 
 // Select Types
