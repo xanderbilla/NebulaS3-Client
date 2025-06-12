@@ -1,15 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getMockBucketList,
-  mockBuckets,
-  getBucketStats,
-  getRecentActivity,
-} from "@/static/buckets";
+import { bucketService } from "@/lib/services/buckets";
 import type {
   BucketListParams,
   BucketListResponse,
   Bucket,
 } from "@/types/bucket";
+import type { ApiResponse } from "@/types/api";
 
 // Query Keys - Centralized for consistency
 export const bucketKeys = {
@@ -22,41 +18,33 @@ export const bucketKeys = {
   activity: () => [...bucketKeys.all, "activity"] as const,
 } as const;
 
-// Simulated API functions (replace with real API calls when backend is ready)
+// Real API functions
 const bucketApi = {
   getBuckets: async (params: BucketListParams): Promise<BucketListResponse> => {
-    // Reduced delay for better UX - only show loading for actual network requests
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    return getMockBucketList(params);
+    return bucketService.getBuckets(params);
   },
 
   getBucketDetails: async (bucketName: string): Promise<Bucket> => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    const bucket = mockBuckets.find((b) => b.bucketName === bucketName);
+    // Note: This would need to be implemented in the backend
+    // For now, we'll get it from the bucket list
+    const response = await bucketService.getBuckets({ search: bucketName });
+    const bucket = response.data?.content?.find(
+      (b) => b.bucketName === bucketName
+    );
     if (!bucket) throw new Error(`Bucket ${bucketName} not found`);
     return bucket;
   },
 
-  deleteBucket: async (bucketName: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 800)); // Reduced from 1500ms
-    // Simulate deletion - in real app, this would call the API
-    console.log(`Deleting bucket: ${bucketName}`);
+  deleteBucket: async (bucketName: string): Promise<ApiResponse> => {
+    return bucketService.deleteBucket(bucketName);
   },
 
-  emptyBucket: async (bucketName: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Reduced from 2000ms
-    // Simulate emptying - in real app, this would call the API
-    console.log(`Emptying bucket: ${bucketName}`);
+  emptyBucket: async (bucketName: string): Promise<ApiResponse> => {
+    return bucketService.emptyBucket(bucketName);
   },
 
-  getStats: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 50)); // Reduced from 300ms
-    return getBucketStats();
-  },
-
-  getRecentActivity: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 50)); // Reduced from 400ms
-    return getRecentActivity();
+  createBucket: async (bucketName: string): Promise<ApiResponse> => {
+    return bucketService.createBucket(bucketName);
   },
 };
 
@@ -78,21 +66,21 @@ export function useBucketDetails(bucketName: string) {
   });
 }
 
-// Hook to fetch bucket statistics
-export function useBucketStats() {
-  return useQuery({
-    queryKey: bucketKeys.stats(),
-    queryFn: bucketApi.getStats,
-    staleTime: 60 * 1000, // 1 minute
-  });
-}
+// Mutation hook for creating buckets
+export function useCreateBucket() {
+  const queryClient = useQueryClient();
 
-// Hook to fetch recent activity
-export function useRecentActivity() {
-  return useQuery({
-    queryKey: bucketKeys.activity(),
-    queryFn: bucketApi.getRecentActivity,
-    staleTime: 30 * 1000, // 30 seconds
+  return useMutation({
+    mutationFn: bucketApi.createBucket,
+    onSuccess: () => {
+      // Invalidate and refetch bucket lists
+      queryClient.invalidateQueries({ queryKey: bucketKeys.lists() });
+      // Note: Toast notifications are handled in the UI components
+    },
+    onError: (error: unknown) => {
+      console.error("Create bucket failed:", error);
+      // Note: Error toast notifications are handled in the UI components
+    },
   });
 }
 
@@ -105,8 +93,11 @@ export function useDeleteBucket() {
     onSuccess: () => {
       // Invalidate and refetch bucket lists
       queryClient.invalidateQueries({ queryKey: bucketKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: bucketKeys.stats() });
-      queryClient.invalidateQueries({ queryKey: bucketKeys.activity() });
+      // Note: Toast notifications are handled in the UI components
+    },
+    onError: (error: unknown) => {
+      console.error("Delete bucket failed:", error);
+      // Note: Error toast notifications are handled in the UI components
     },
   });
 }
@@ -120,8 +111,11 @@ export function useEmptyBucket() {
     onSuccess: () => {
       // Invalidate and refetch bucket lists
       queryClient.invalidateQueries({ queryKey: bucketKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: bucketKeys.stats() });
-      queryClient.invalidateQueries({ queryKey: bucketKeys.activity() });
+      // Note: Toast notifications are handled in the UI components
+    },
+    onError: (error: unknown) => {
+      console.error("Empty bucket failed:", error);
+      // Note: Error toast notifications are handled in the UI components
     },
   });
 }
@@ -137,7 +131,7 @@ export function useOptimisticBucketUpdate() {
     queryClient.setQueriesData(
       { queryKey: bucketKeys.lists() },
       (oldData: BucketListResponse | undefined) => {
-        if (!oldData) return oldData;
+        if (!oldData?.data?.content) return oldData;
 
         return {
           ...oldData,

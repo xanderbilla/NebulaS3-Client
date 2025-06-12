@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { LoginCredentials, LoginResponse, LoginData } from "@/types/auth";
-import { mockLoginResponse } from "@/static/auth";
+import { authService } from "@/lib/services/auth";
 
 // Query Keys
 export const authKeys = {
@@ -11,45 +12,73 @@ export const authKeys = {
   user: () => [...authKeys.all, "user"] as const,
 } as const;
 
-// Simulated API functions
+// Real API functions
 const authApi = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const response = await authService.login({
+      accessKey: credentials.accessKey,
+      secretKey: credentials.secretKey,
+    });
 
-    // Basic validation - in real app, this would be handled by backend
-    if (!credentials.accessKey || !credentials.secretKey) {
-      throw new Error("Access Key and Secret Key are required");
+    // Set session token in API client and storage
+    if (response.data?.sessionToken && typeof window !== "undefined") {
+      authService.setSessionToken(response.data.sessionToken);
+      // Store additional auth data for session validation
+      localStorage.setItem(
+        "authData",
+        JSON.stringify({
+          accessKeyId: response.data.accessKeyId,
+          expiration: response.data.expiration,
+        })
+      );
     }
 
-    return mockLoginResponse;
+    return response;
   },
 
   validateSession: async (): Promise<LoginData | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 50)); // Reduced for faster auth checks
+    if (typeof window === "undefined") return null;
 
-    // Check if we have stored auth data
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("nebula-auth");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          // Check if token is expired
-          if (parsed.expiration && Date.now() < parsed.expiration) {
-            return parsed;
-          }
-        } catch {
-          // Invalid stored data
-        }
+    const sessionToken = localStorage.getItem("sessionToken");
+    const authDataStr = localStorage.getItem("authData");
+
+    if (!sessionToken || !authDataStr) return null;
+
+    try {
+      const authData = JSON.parse(authDataStr);
+
+      // Check if token is expired
+      if (!authData.expiration || Date.now() / 1000 >= authData.expiration) {
+        authService.logout();
+        return null;
       }
+
+      // Validate session with API
+      const validation = await authService.validateSession(
+        authData.accessKeyId
+      );
+      if (validation.data === true) {
+        return {
+          ...authData,
+          sessionToken,
+          region: "ap-south-1",
+        };
+      }
+
+      // Session validation failed
+      authService.logout();
+      return null;
+    } catch {
+      // Invalid stored data
+      authService.logout();
+      return null;
     }
-    return null;
   },
 
   logout: async (): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    authService.logout();
     if (typeof window !== "undefined") {
-      localStorage.removeItem("nebula-auth");
+      localStorage.removeItem("authData");
     }
   },
 };
@@ -68,6 +97,7 @@ export function useAuth() {
     queryFn: authApi.validateSession,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Set initialized flag after first load
@@ -95,19 +125,32 @@ export function useLogin() {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
-      // Store auth data
-      if (typeof window !== "undefined") {
-        localStorage.setItem("nebula-auth", JSON.stringify(data.data));
-      }
-
       // Update session cache
       queryClient.setQueryData(authKeys.session(), data.data);
+
+      // Show success toast with API message
+      toast.success(data.message ?? "Login successful");
 
       // Redirect to dashboard
       router.push("/dashboard");
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Login failed:", error);
+      // Show error toast with API message or fallback
+      let errorMessage = "Login failed";
+
+      if (error && typeof error === "object") {
+        const apiError = error as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        errorMessage =
+          apiError.response?.data?.message ??
+          apiError.message ??
+          "Login failed";
+      }
+
+      toast.error(errorMessage);
     },
   });
 }
@@ -123,7 +166,19 @@ export function useLogout() {
       // Clear all cached data
       queryClient.clear();
 
+      // Show success toast
+      toast.success("Logged out successfully");
+
       // Redirect to login
+      router.push("/auth/login");
+    },
+    onError: (error: unknown) => {
+      console.error("Logout failed:", error);
+      // Show error toast
+      toast.error("Failed to logout properly");
+
+      // Still redirect to login even if logout API fails
+      queryClient.clear();
       router.push("/auth/login");
     },
   });

@@ -1,27 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import type { HealthStatus } from "@/types/health";
+import { healthService } from "@/lib/services/health";
 
 // Query Keys
 export const healthKeys = {
-  all: ['health'] as const,
-  status: () => [...healthKeys.all, 'status'] as const,
+  all: ["health"] as const,
+  status: () => [...healthKeys.all, "status"] as const,
 } as const;
 
-// Simulated API function
+// Real API function
 const healthApi = {
   checkHealth: async (): Promise<HealthStatus> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    // Hardcoded to always return healthy for demo
+    const response = await healthService.checkHealth();
+    // Transform API response to match expected format
     return {
-      status: 'healthy',
-      message: 'All systems operational',
-      timestamp: new Date().toISOString(),
+      status: response.data?.status === "UP" ? "healthy" : "unhealthy",
+      message:
+        response.data?.message ?? response.message ?? "System status unknown",
+      timestamp: response.timestamp ?? new Date().toISOString(),
       services: {
-        s3: 'operational',
-        auth: 'operational',
-        api: 'operational',
+        s3: "operational",
+        auth: "operational",
+        api: "operational",
       },
     };
   },
@@ -35,6 +35,6 @@ export function useHealthCheck() {
     refetchInterval: 30 * 1000, // Refetch every 30 seconds
     staleTime: 20 * 1000, // 20 seconds
     retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
