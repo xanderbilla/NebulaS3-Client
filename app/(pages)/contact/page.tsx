@@ -39,7 +39,7 @@ export default function ContactPage() {
             <div className="p-6">
               <h2 className="text-xl font-semibold mb-2">Email Support</h2>
               <Link href="mailto:vikas99blr@gmail.com">
-                mail.vikas99blr@gmail.com
+                vikas99blr@gmail.com
               </Link>
             </div>
           </div>
